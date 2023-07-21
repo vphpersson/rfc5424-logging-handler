@@ -6,9 +6,6 @@ from collections import OrderedDict
 from datetime import datetime
 from logging import Handler
 
-from pytz import utc
-from tzlocal import get_localzone
-
 from rfc5424logging import transport
 
 NILVALUE = '-'
@@ -98,7 +95,6 @@ class Rfc5424SysLogHandler(Handler):
             procid=None,
             structured_data=None,
             enterprise_id=None,
-            utc_timestamp=False,
             timeout=5,
             tls_enable=False,
             tls_ca_bundle=None,
@@ -147,7 +143,7 @@ class Rfc5424SysLogHandler(Handler):
                 of the message. Defaults to ``FRAMING_NON_TRANSPARENT`` which will escape all
                 newline characters in the message and end the message with a newline character.
                 When set to ``FRAMING_OCTET_COUNTING``, it will prepend the message length to the
-                begin of the message.
+                beginning of the message.
             msg_as_utf8 (bool):
                 Controls the way the message is sent.
                 disabling this parameter sends the message as MSG-ANY (RFC2424 section 6), avoiding
@@ -169,8 +165,6 @@ class Rfc5424SysLogHandler(Handler):
                 The Private Enterprise Number. This is used to compose the structured data IDs when
                 they do not include an Enterprise ID and are not one of the reserved structured data IDs.
                 Can be a single PEN like ``32473`` or optionally contain sub-identifiers like ``32473.2.6``
-            utc_timestamp (bool):
-                Whether the timestamp should be converted to UTC time or kept in the local timezone
             timeout (int):
                 Sets the timeout on the connection to the server.
             tls_enable (bool):
@@ -207,7 +201,6 @@ class Rfc5424SysLogHandler(Handler):
         self.enterprise_id = enterprise_id
         self.framing = framing
         self.msg_as_utf8 = msg_as_utf8
-        self.utc_timestamp = utc_timestamp
         self.timeout = timeout
         self.tls_enable = tls_enable
         self.tls_ca_bundle = tls_ca_bundle
@@ -366,9 +359,7 @@ class Rfc5424SysLogHandler(Handler):
         # HEADER
         pri = '<%d>' % self.encode_priority(self.facility, record.levelname)
         version = SYSLOG_VERSION
-        timestamp = datetime.fromtimestamp(record.created, get_localzone())
-        if self.utc_timestamp:
-            timestamp = timestamp.astimezone(utc)
+        timestamp = datetime.fromtimestamp(record.created).astimezone()
         timestamp = timestamp.isoformat()
         hostname = self.get_hostname(record)
         appname = self.get_appname(record)

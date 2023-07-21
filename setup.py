@@ -33,10 +33,7 @@ setup(
         'Topic :: System :: Logging',
         'Development Status :: 5 - Production/Stable',
     ],
-    install_requires=[
-        'tzlocal',
-        'pytz',
-    ],
+    install_requires=[],
     tests_require=[
         'pytest',
         'mock',
